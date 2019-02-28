@@ -520,7 +520,6 @@ class NodesBox(QWidget):
         self.verticalLayout.addWidget(self.treeWidget)
         self.lineEdit.textChanged.connect(self.leTextChanged)
         self.treeWidget.refresh()
-        self.installEventFilter(self)
 
     def sizeHint(self):
         return QtCore.QSize(400, 250)
@@ -536,24 +535,6 @@ class NodesBox(QWidget):
             return
         self.treeWidget.refresh(None, self.lineEdit.text())
         self.expandCategory()
-        
-
-    def eventFilter(self, object, event):
-        if event.type() == QtCore.QEvent.WindowActivate:
-            pass
-            #print "widget window has gained focus"
-        elif event.type()== QtCore.QEvent.WindowDeactivate:
-            pass
-            #self.hide()
-        elif event.type()== QtCore.QEvent.FocusIn:
-            pass
-            #print "widget has gained keyboard focus"
-        elif event.type()== QtCore.QEvent.FocusOut:
-            pass
-            #print "widget has lost keyboard focus"
-
-
-        return False
 
 MANIP_MODE_NONE = 0
 MANIP_MODE_SELECT = 1
@@ -561,7 +542,7 @@ MANIP_MODE_PAN = 2
 MANIP_MODE_MOVE = 3
 MANIP_MODE_ZOOM = 4
 MANIP_MODE_COPY = 5
-from Qt.QtWidgets import QGraphicsLinearLayout
+
 class GraphWidget(QGraphicsView, Graph):
 
     _manipulationMode = MANIP_MODE_NONE
@@ -577,6 +558,7 @@ class GraphWidget(QGraphicsView, Graph):
     outPinDeleted = QtCore.Signal(object)
     inPinCreated = QtCore.Signal(object)
     inPinDeleted = QtCore.Signal(object)
+
     def __init__(self, name, parent=None):
         super(GraphWidget, self).__init__()
         Graph.__init__(self, name)
@@ -602,8 +584,6 @@ class GraphWidget(QGraphicsView, Graph):
         self.maximum_scale = 2.0
         self.setViewportUpdateMode(self.FullViewportUpdate)
         self.setCacheMode(QGraphicsView.CacheBackground)
-
-        self.setRenderHint(QtGui.QPainter.Antialiasing)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setAcceptDrops(True)
         self.setAttribute(QtCore.Qt.WA_AlwaysShowToolTips)
@@ -804,29 +784,6 @@ class GraphWidget(QGraphicsView, Graph):
     def save_as(self):
         self.save(True)
 
-    def addInputNode(self):
-        #self.inputsItem = Node("__scene_inputs__",self)
-        self.inputsItem = getNodeInstance(Nodes, "scene_inputs", "__scene_inputs__", self)
-        Graph.addNode(self, self.inputsItem, {"x":0,"y":0})
-        self.scene().addItem(self.inputsItem)
-        self.inputsItem.sender.pinCreated.connect(self.inPinCreated.emit)
-
-    def addOutputNode(self):
-        #self.inputsItem = Node("__scene_inputs__",self)
-        self.outputsItem = getNodeInstance(Nodes, "scene_outputs", "__scene_outputs__", self)
-
-        Graph.addNode(self, self.outputsItem, {"x":0,"y":0})
-        self.scene().addItem(self.outputsItem)
-        self.outputsItem.sender.pinCreated.connect(self.outPinCreated.emit)
-
-        
-
-    def evalOutputsNode(self):
-        #self.outputsItem.compute()
-        for pin in self.outputsItem.inputs.values():
-            print pin
-            print pin.getData()
-
     def new_file(self):
         self._current_file_name = 'Untitled'
         self._file_name_label.setPlainText('Untitled')
@@ -1017,6 +974,7 @@ class GraphWidget(QGraphicsView, Graph):
                         instance.rect.setBottom(rect.height())
                         instance.label().width = rect.width()
                         instance.label().adjustSizes()
+
             if all([event.key() == QtCore.Qt.Key_Left, modifiers == QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier]):
                 self.alignSelectedNodes(Direction.Left)
                 return
@@ -1029,12 +987,14 @@ class GraphWidget(QGraphicsView, Graph):
             if all([event.key() == QtCore.Qt.Key_Down, modifiers == QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier]):
                 self.alignSelectedNodes(Direction.Down)
                 return
+
             if all([event.key() == QtCore.Qt.Key_Z, modifiers == QtCore.Qt.ControlModifier]):
                 if self.isShortcutsEnabled():
                     self.undoStack.undo()
             if all([event.key() == QtCore.Qt.Key_Y, modifiers == QtCore.Qt.ControlModifier]):
                 if self.isShortcutsEnabled():
                     self.undoStack.redo()
+
             if all([event.key() == QtCore.Qt.Key_N, modifiers == QtCore.Qt.ControlModifier]):
                 self.new_file()            
             if all([event.key() == QtCore.Qt.Key_O, modifiers == QtCore.Qt.ControlModifier]):
@@ -1080,6 +1040,7 @@ class GraphWidget(QGraphicsView, Graph):
                     edges += i.edge_list                
             
             for e in edges:
+                
                 if e.source().parent() in oldNodes and e.destination().parent() in oldNodes:
                     nsrc =  newNodes[oldNodes.index(e.source().parent())].getPinByName(e.source().name)
                     ndst =  newNodes[oldNodes.index(e.destination().parent())].getPinByName(e.destination().name)
@@ -1662,6 +1623,7 @@ class GraphWidget(QGraphicsView, Graph):
             return instance
         except:
             print "Error on Variable DataTypes"
+            
     def createVariableGetter(self, jsonTemplate):
         try:
             var = self.vars[uuid.UUID(jsonTemplate['meta']['var']['uuid'])]
@@ -1775,6 +1737,27 @@ class GraphWidget(QGraphicsView, Graph):
 
     def reset_scale(self):
         self.resetMatrix()
+
+    def addInputNode(self):
+        #self.inputsItem = Node("__scene_inputs__",self)
+        self.inputsItem = getNodeInstance(Nodes, "scene_inputs", "__scene_inputs__", self)
+        Graph.addNode(self, self.inputsItem, {"x":0,"y":0})
+        self.scene().addItem(self.inputsItem)
+        self.inputsItem.sender.pinCreated.connect(self.inPinCreated.emit)
+
+    def addOutputNode(self):
+        #self.inputsItem = Node("__scene_inputs__",self)
+        self.outputsItem = getNodeInstance(Nodes, "scene_outputs", "__scene_outputs__", self)
+
+        Graph.addNode(self, self.outputsItem, {"x":0,"y":0})
+        self.scene().addItem(self.outputsItem)
+        self.outputsItem.sender.pinCreated.connect(self.outPinCreated.emit)
+
+    def evalOutputsNode(self):
+        #self.outputsItem.compute()
+        for pin in self.outputsItem.inputs.values():
+            print pin
+            print pin.getData()
 
     def eventFilter(self, object, event):
         if event.type()== QtCore.QEvent.KeyPress and event.key()== QtCore.Qt.Key_Tab:

@@ -19,5 +19,5 @@ instance.show()
 
 try:
     sys.exit(app.exec_())
-except Exception as e:	
+except Exception as e:
     print(e)
