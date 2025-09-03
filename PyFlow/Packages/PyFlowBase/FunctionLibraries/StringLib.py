@@ -80,13 +80,13 @@ class StringLib(FunctionLibraryBase):
         return str.split(s, sep)
     
     @staticmethod
-    @IMPLEMENT_NODE(returns=('StringPin', [], {PinSpecifiers.CONSTRAINT: '1', PinSpecifiers.ENABLED_OPTIONS: PinOptions.ArraySupported}), 
+    @IMPLEMENT_NODE(returns=('BoolPin', False, {PinSpecifiers.CONSTRAINT: '1'}), 
                     meta={NodeMeta.CATEGORY: 'String', NodeMeta.KEYWORDS: []})
-    def starstWith(s=('StringPin', ""), prefix=('StringPin', "", { PinSpecifiers.ENABLED_OPTIONS: PinOptions.ArraySupported|PinOptions.ChangeTypeOnConnection })):
+    def startsWith(s=('StringPin', ""), prefix=('StringPin', "", { PinSpecifiers.ENABLED_OPTIONS: PinOptions.ArraySupported|PinOptions.ChangeTypeOnConnection })):
         return s.startswith(prefix)
     
     @staticmethod
-    @IMPLEMENT_NODE(returns=('StringPin', [], {PinSpecifiers.CONSTRAINT: '1', PinSpecifiers.ENABLED_OPTIONS: PinOptions.ArraySupported}), 
+    @IMPLEMENT_NODE(returns=('BoolPin', False, {PinSpecifiers.CONSTRAINT: '1'}), 
                     meta={NodeMeta.CATEGORY: 'String', NodeMeta.KEYWORDS: []})
     def endsWith(s=('StringPin', ""), suffix=('StringPin', "", { PinSpecifiers.ENABLED_OPTIONS: PinOptions.ArraySupported|PinOptions.ChangeTypeOnConnection })):
         return s.endswith(suffix)

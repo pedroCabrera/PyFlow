@@ -280,9 +280,9 @@ class PathLib(FunctionLibraryBase):
         base=("StringPin", "", {PinSpecifiers.INPUT_WIDGET_VARIANT: "PathWidget"}),
         paths=("StringPin", []),
     ):
-        """Join one or more path components intelligently. The return value is the concatenation of path and any members of *paths with exactly one directory separator (os.sep) following each non-empty part except the last, meaning that the result will only end in a separator if the last part is empty. If a component is an absolute path, all previous components are thrown away and joining continues from the absolute path component.
-        On Windows, the drive letter is not reset when an absolute path component (e.g., r'\foo') is encountered. If a component contains a drive letter, all previous components are thrown away and the drive letter is reset. Note that since there is a current directory for each drive, os.path.join("c:", "foo") represents a path relative to the current directory on drive C: (c:foo), not c:\foo."""
-        return osPath.join(base, paths)
+        """Join one or more path components intelligently. The return value is the concatenation of path and any members of \\*paths with exactly one directory separator (os.sep) following each non-empty part except the last, meaning that the result will only end in a separator if the last part is empty. If a component is an absolute path, all previous components are thrown away and joining continues from the absolute path component.
+        On Windows, the drive letter is not reset when an absolute path component (e.g., r'\\\\foo') is encountered. If a component contains a drive letter, all previous components are thrown away and the drive letter is reset. Note that since there is a current directory for each drive, os.path.join("c:", "foo") represents a path relative to the current directory on drive C: (c:foo), not c:\\\\foo."""
+        return osPath.join(base, *paths)
 
     @staticmethod
     @IMPLEMENT_NODE(
@@ -425,7 +425,7 @@ class PathLib(FunctionLibraryBase):
         unc=(REF, ("StringPin", "")),
         rest=(REF, ("StringPin", "")),
     ):
-        """Split the pathname path into a pair (unc, rest) so that unc is the UNC mount point (such as r'\\host\mount'), if present, and rest the rest of the path (such as r'\path\file.ext'). For paths containing drive letters, unc will always be the empty string."""
+        """Split the pathname path into a pair (unc, rest) so that unc is the UNC mount point (such as r'\\\\\\\\host\\\\mount'), if present, and rest the rest of the path (such as r'\\\\path\\\\file.ext'). For paths containing drive letters, unc will always be the empty string."""
         splited = osPath.splitdrive(path)
         if len(splited):
             unc(splited[0])

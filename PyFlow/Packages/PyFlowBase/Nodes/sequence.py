@@ -66,5 +66,5 @@ class sequence(NodeBase):
         return "The Sequence node allows for a single execution pulse to trigger a series of events in order. The node may have any number of outputs, all of which get called as soon as the Sequence node receives an input. They will always get called in order, but without any delay. To a typical user, the outputs will likely appear to have been triggered simultaneously."
 
     def compute(self, *args, **kwargs):
-        for out in self.outputs.values():
+        for out in self.orderedOutputs.values():
             out.call(*args, **kwargs)
