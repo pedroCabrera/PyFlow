@@ -16,6 +16,7 @@ from collections import OrderedDict
 import os
 import importlib.util
 import inspect
+from typing import Optional
 
 from PyFlow.Core import PinBase
 from PyFlow.Core import NodeBase
@@ -41,12 +42,13 @@ class PackageBase(object):
         self._TOOLS = OrderedDict()
         self._PREFS_WIDGETS = OrderedDict()
         self._EXPORTERS = OrderedDict()
+        self._CUSTOM_PLUGIN_CLASSES = {}
 
         self._PinsInputWidgetFactory = None
         self._UINodesFactory = None
         self._UIPinsFactory = None
 
-    def analyzePackage(self, packagePath):
+    def analyzePackage(self, packagePath, custom_types: Optional[list[tuple[str, type]]] = None):
         def import_subclasses(directory, base_class):
             subclasses = []
             for filename in os.listdir(directory):
@@ -75,13 +77,21 @@ class PackageBase(object):
                     else:
                         elementDict[subclass.__name__] = subclass
 
+        # initiate custom element store
+        if custom_types is None:
+            custom_types = []
+        for typ in custom_types:
+            if typ[0] not in self._CUSTOM_PLUGIN_CLASSES:
+                self._CUSTOM_PLUGIN_CLASSES[typ[0]] = {}
+        custom_elements = [(typ[0], self._CUSTOM_PLUGIN_CLASSES[typ[0]], typ[1]) for typ in custom_types]
         # Load all elements from the package
         for element in [("FunctionLibraries", self._FOO_LIBS, FunctionLibraryBase),
                         ("Nodes", self._NODES, NodeBase),
                         ("Pins", self._PINS, PinBase),
                         ("Tools", self._TOOLS, ToolBase),
                         ("Exporters", self._EXPORTERS, IDataExporter),
-                        ("PrefsWidgets", self._PREFS_WIDGETS, CategoryWidgetBase)]:
+                        ("PrefsWidgets", self._PREFS_WIDGETS, CategoryWidgetBase)] + \
+                        custom_elements:
             loadPackageElements(packagePath, element[0], element[1], element[2])
         if os.path.exists(os.path.join(packagePath, "Factories")):
             modPrefix = "PyFlow.Packages."+self.__class__.__name__+".Factories."
@@ -164,3 +174,12 @@ class PackageBase(object):
         :rtype: function
         """
         return self._PinsInputWidgetFactory
+
+    def GetCustomClasses(self, custom_type):
+        """Registered custom plugins by their type name.
+        
+        :rtype: dict[str, class]
+        """
+        if custom_type not in self._CUSTOM_PLUGIN_CLASSES:
+            return {}
+        return self._CUSTOM_PLUGIN_CLASSES[custom_type]
